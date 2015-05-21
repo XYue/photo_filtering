@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="main">
+      <UniqueIdentifier>{d97023b0-3eca-455d-a17c-484744920b11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="converter">
+      <UniqueIdentifier>{43582b1c-0434-4254-8d7d-b2e7d3c66a52}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\fly_pos_to_kml\main\main.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\fly_pos_to_kml\converter\pos_kml_converter.cpp">
+      <Filter>converter</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\fly_pos_to_kml\converter\pos_kml_converter.hpp">
+      <Filter>converter</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

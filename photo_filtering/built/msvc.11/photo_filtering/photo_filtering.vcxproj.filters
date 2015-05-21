@@ -4,10 +4,21 @@
     <Filter Include="main">
       <UniqueIdentifier>{ad649af0-78d5-4370-8944-92642efa74df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="photo_filtering">
+      <UniqueIdentifier>{18654791-713e-4d8f-a7a8-40de02e495f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\main\main.cpp">
+    <ClCompile Include="..\..\..\src\photo_filtering\main\main.cpp">
       <Filter>main</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\photo_filtering\photo_filtering\photo_filtering.cpp">
+      <Filter>photo_filtering</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\photo_filtering\photo_filtering\photo_filtering.hpp">
+      <Filter>photo_filtering</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

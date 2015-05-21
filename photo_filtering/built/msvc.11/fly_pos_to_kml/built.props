@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+            
+    <PropertyGroup>
+        <TINYXML2_CONFIG_LINK>static</TINYXML2_CONFIG_LINK>
+    </PropertyGroup>
+    
+    <ImportGroup Label="PropertySheets">
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\tinyxml2\kit\tinyxml2_latest.props"
+            Condition="'$(TINYXML2_IMPORT)'!='true'" />
+    </ImportGroup>
+    
+</Project>
