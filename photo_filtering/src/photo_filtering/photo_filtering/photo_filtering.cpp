@@ -7,6 +7,9 @@
 
 #include <tinyxml2.h>
 #include <boost/filesystem.hpp>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
 #include <Eigen/LU>
 #include <proj_api.h>
 #include <exiv2.hpp>
@@ -255,7 +258,7 @@ error0:
 		}
 	}
 
-	bool PhotoFilter::point_in_polygon( 
+	inline bool PhotoFilter::point_in_polygon( 
 		const Point pt, 
 		const std::vector<Point> & contour, 
 		const Point * min /*= NULL*/,
@@ -281,6 +284,16 @@ error0:
 
 
 		return be_in;
+	}
+
+	inline bool PhotoFilter::point_in_polygon(const Eigen::Vector3d pt,
+		const std::vector<Point> & contour, 
+		const Point * min /*= NULL*/, 
+		const Point * max /*= NULL*/)
+	{
+		Point p = {pt(0), pt(1), pt(2)};
+
+		return point_in_polygon(p, contour, min, max);
 	}
 
 	int PhotoFilter::proj_image_center(
@@ -559,6 +572,10 @@ error0:
 				}
 			}
 			
+			// boost polygon intersect
+			typedef boost::geometry::model::d2::point_xy<double> Point_XY;
+			typedef boost::geometry::model::polygon<Point_XY> polygon;
+			polygon aoi_contour;
 
 			// to bj54			
 			for (int i_c = 0; i_c < num_contour; ++i_c)
@@ -574,7 +591,12 @@ error0:
 				}
 				contour[i_c].x = x;
 				contour[i_c].y = y;
+
+				// boost polygon intersect
+				boost::geometry::append(aoi_contour, Point_XY(x, y));
 			}
+
+			boost::geometry::correct(aoi_contour);
 
 
 			if (_photos.empty() && load_pos())
@@ -618,20 +640,79 @@ error0:
 
 
 				// project image center to the plane
-				Eigen::Vector3d proj_pos;
-				if (proj_image_center(photo.pitch, photo.roll, photo.yaw,
+// 				Eigen::Vector3d proj_pos;
+// 				if (proj_image_center(photo.pitch, photo.roll, photo.yaw,
+// 					img_width, img_height, img_focal, 
+// 					cam_pos, proj_plane, proj_pos))
+// 				{
+// 					std::cout<<"proj_image_center failed. "<<i_p<<std::endl;
+// 					std::cout<<img_width<<" "<<img_height<<" "<<img_focal<<" "
+// 						<<cam_pos(0)<<" "<<cam_pos(1)<<" "<<cam_pos(2)<<std::endl;
+// 					continue;
+// 				}								
+// 
+// 
+// 				Point pt = {proj_pos(0), proj_pos(1), proj_pos(2)};	
+
+				std::vector<Eigen::Vector3d> useful_pts(13);
+				useful_pts[0] = Eigen::Vector3d(0, 0, img_focal);
+
+				useful_pts[1] = Eigen::Vector3d(-img_width/2., -img_height/2., img_focal);
+				useful_pts[2] = Eigen::Vector3d(-img_width/2., img_height/2., img_focal);
+				useful_pts[3] = Eigen::Vector3d(img_width/2., img_height/2., img_focal);
+				useful_pts[4] = Eigen::Vector3d(img_width/2., -img_height/2., img_focal);
+
+				double boundary_unit_x = /*img_width / 8.*/0;
+				double boundary_unit_y = /*img_height / 8.*/0;
+				useful_pts[5] = Eigen::Vector3d(-img_width/2. + boundary_unit_x, -img_height/2. + boundary_unit_y, img_focal);
+				useful_pts[6] = Eigen::Vector3d(-img_width/2. + boundary_unit_x, img_height/2. - boundary_unit_y, img_focal);
+				useful_pts[7] = Eigen::Vector3d(img_width/2. - boundary_unit_x, img_height/2. -boundary_unit_y, img_focal);
+				useful_pts[8] = Eigen::Vector3d(img_width/2. - boundary_unit_x, -img_height/2. + boundary_unit_y, img_focal);
+				useful_pts[9] = Eigen::Vector3d(0, -boundary_unit_y, img_focal);
+				useful_pts[10] = Eigen::Vector3d(0, boundary_unit_y, img_focal);
+				useful_pts[11] = Eigen::Vector3d(-boundary_unit_x, 0., img_focal);
+				useful_pts[12] = Eigen::Vector3d(boundary_unit_x, 0, img_focal);
+				
+				std::vector<Eigen::Vector3d> proj_pts;
+				if (proj_image_points(photo.pitch, photo.roll, photo.yaw,
 					img_width, img_height, img_focal, 
-					cam_pos, proj_plane, proj_pos))
+					cam_pos, proj_plane, useful_pts,proj_pts))
 				{
-					std::cout<<"proj_image_center failed. "<<i_p<<std::endl;
+					std::cout<<"proj_image_points failed. "<<i_p<<std::endl;
 					std::cout<<img_width<<" "<<img_height<<" "<<img_focal<<" "
 						<<cam_pos(0)<<" "<<cam_pos(1)<<" "<<cam_pos(2)<<std::endl;
 					continue;
-				}								
+				}
+
+				// image contour
+				std::vector<Point> image_contour;
+				for (int i_co = 1; i_co < 5; ++i_co)
+				{
+					Point pt = {proj_pts[i_co](0), proj_pts[i_co](1), proj_pts[i_co](2)};
+					image_contour.push_back(pt);
+				}
+
+				// boost intersect				
+				polygon camera_range;
+				for (int i_co = 1; i_co < 5; ++i_co)
+				{
+					boost::geometry::append(camera_range, Point_XY(proj_pts[i_co](0), proj_pts[i_co](1)));
+				}
+				boost::geometry::correct(camera_range);
 
 
-				Point pt = {proj_pos(0), proj_pos(1), proj_pos(2)};	
-				if (point_in_polygon(pt, contour))
+				if (/*point_in_polygon(pt, contour)*/
+					/*point_in_polygon(proj_pts[0], contour) ||
+					point_in_polygon(proj_pts[5], contour) ||
+					point_in_polygon(proj_pts[6], contour) ||
+					point_in_polygon(proj_pts[7], contour) ||
+					point_in_polygon(proj_pts[8], contour) ||
+					point_in_polygon(proj_pts[9], contour) ||
+					point_in_polygon(proj_pts[10], contour) ||
+					point_in_polygon(proj_pts[11], contour) ||
+					point_in_polygon(proj_pts[12], contour) ||*/
+					boost::geometry::intersects(aoi_contour, camera_range) ||
+					polygon_in_polygon(contour, image_contour))
 				{
 					std::string dst_image_fullname = img_dir + "\\" + photo.filename;
 					boost::filesystem::copy_file(image_fullname,
@@ -757,6 +838,165 @@ error0:
 		} while (0);
 		
 		return ret;
+	}
+
+	int PhotoFilter::proj_image_points(
+		const double & pitch, const double & roll, const double & yaw, 
+		const double & img_width, const double & img_height, const double & focal,
+		const Eigen::Vector3d & camera_pos, 
+		const Eigen::Vector4d & proj_plane, 
+		const std::vector<Eigen::Vector3d> & image_points, 
+		std::vector<Eigen::Vector3d> & proj_points)
+	{
+		int ret = -1;
+
+		do 
+		{
+			if (image_points.empty())
+			{
+				std::cout<<"Empty image points."<<std::endl;
+				break;
+			}
+
+			if (img_width < DBL_EPSILON || img_height < DBL_EPSILON ||
+				focal < DBL_EPSILON ||
+				(proj_plane(0) < DBL_EPSILON && proj_plane(1) < DBL_EPSILON && 
+				proj_plane(2) < DBL_EPSILON ) )
+			{
+				std::cout<<"Invalid input parameters: "
+					<< img_width << " " << img_height << " " << focal << std::endl;
+				std::cout<<proj_plane(0)<<" "<<proj_plane(1)<<" "
+					<<proj_plane(2)<<" "<<proj_plane(3)<<std::endl;
+				break;
+			}
+
+
+			// from lyh
+			/*
+			* cos_deg和sin_deg是针对原始cos和sin函数封装的功能相同的函数，
+			* 只是输入参数的单位是度。
+			* 另外，因为cos和sin函数在角度为+/-263附近会计算出错，故有此
+			* 处理
+			*/
+			double cos_yaw = cos_deg(yaw);
+			double sin_yaw = sin_deg(yaw);
+			double cos_roll = cos_deg(roll);
+			double sin_roll = sin_deg(roll);
+			double cos_pitch = cos_deg(pitch);
+			double sin_pitch = sin_deg(pitch);
+
+			// 绕Z轴旋转Yaw角的旋转矩阵(陀螺仪坐标系)
+			Eigen::Matrix3d mat_yaw;
+			mat_yaw <<  cos_yaw, -sin_yaw,  0,
+				sin_yaw,  cos_yaw,  0,
+				0, 0, 1;
+
+			// 绕X轴旋转Roll角的旋转矩阵(陀螺仪坐标系)
+			Eigen::Matrix3d mat_roll;
+			mat_roll <<  1,   0,   0,
+				0,  cos_roll, -sin_roll,
+				0,  sin_roll,  cos_roll;
+
+			// 绕Y轴旋转Pitch角的旋转矩阵(陀螺仪坐标系)
+			Eigen::Matrix3d mat_pitch;
+			mat_pitch << cos_pitch,  0,  sin_pitch,
+				0, 1, 0 ,
+				-sin_pitch,  0,  cos_pitch;
+
+			/*
+			* 这里虽然有三个旋转角，但只包含两组旋转，即
+			* 世界坐标系 -> 陀螺仪坐标系
+			* 飞机坐标系 -> 相机坐标系
+			* 其中，
+			* (1) 陀螺仪坐标系是将世界坐标系先绕Z轴逆时针旋转90度，再绕X轴(
+			*     注意是旋转后的X轴)逆时针旋转180度所得，对应于adjust1和
+			*     adjust2;
+			* (2) 相机坐标系是将飞机坐标系绕Z轴逆时针旋转90度所得，对应于
+			*     adjust3；
+			*/
+			double adjust1 = -90.0;
+			double adjust2 = -180.0;
+			double adjust3 = -90.0;
+			double cos_adjust1 = cos_deg(adjust1);
+			double sin_adjust1 = sin_deg(adjust1);
+			double cos_adjust2 = cos_deg(adjust2);
+			double sin_adjust2 = sin_deg(adjust2);
+			double cos_adjust3 = cos_deg(adjust3);
+			double sin_adjust3 = sin_deg(adjust3);
+
+			// adjusts
+			Eigen::Matrix3d mat_adjust1;
+			mat_adjust1 << cos_adjust1, -sin_adjust1,  0,
+				sin_adjust1,  cos_adjust1,  0,
+				0, 0, 1;
+			Eigen::Matrix3d mat_adjust2;
+			mat_adjust2 << 1, 0, 0,
+				0,  cos_adjust2, -sin_adjust2,
+				0,  sin_adjust2,  cos_adjust2;
+			Eigen::Matrix3d mat_adjust3;
+			mat_adjust3 << cos_adjust3, -sin_adjust3,  0,
+				sin_adjust3,  cos_adjust3,  0,
+				0, 0, 1;
+
+			/*
+			* 将三组变换组合成旋转矩阵，其中Yaw/Pitch/Roll三个旋转矩阵的组
+			* 合顺序很重要，且由于是从“惯性坐标系”转换到“物体坐标系”，故需
+			* 要进行逆变换
+			*/
+			Eigen::Matrix3d mat_rot =
+				mat_adjust3 * (mat_yaw*mat_pitch*mat_roll).transpose() * mat_adjust2 * mat_adjust1;
+			
+			// 将五点投影到指定投影面上
+			const double &A = proj_plane[0];
+			const double &B = proj_plane[1];
+			const double &C = proj_plane[2];
+			const double &D = proj_plane[3];
+			size_t num_pts = image_points.size();
+			proj_points.clear();
+			proj_points.resize(num_pts);
+			for (unsigned int i_p = 0; i_p < num_pts; ++i_p)
+			{
+				Eigen::Vector3d pt = image_points[i_p];
+
+				if (pt(0) < -img_width/2. || pt(0) > img_width / 2. ||
+					pt(1) < -img_height/2. || pt(1) > img_height / 2. )
+				{
+					std::cout<<"Invalid image points: "<<i_p<<std::endl;
+					std::cout<<pt(0)<<" "<<pt(1)<<std::endl;
+					goto error0;
+				}
+
+				pt = mat_rot.inverse() * pt +camera_pos;
+
+				double t =
+					-(A*camera_pos[0] + B*camera_pos[1] + C*camera_pos[2]+D) / 
+					(A*(pt[0]-camera_pos[0]) + B*(pt[1]-camera_pos[1]) + C*(pt[2]-camera_pos[2]));
+
+				proj_points[i_p] = camera_pos + ( pt - camera_pos) * t;
+			}
+
+
+			ret = 0;
+		} while (0);
+error0:
+
+		return ret;
+	}
+
+	inline bool PhotoFilter::polygon_in_polygon(
+		const std::vector<Point> & contour_a, 
+		const std::vector<Point> & contour_b)
+	{
+		size_t num_pta = contour_a.size();
+		for (int i_pa = 0; i_pa < num_pta; ++i_pa)
+		{
+			if (!point_in_polygon(contour_a[i_pa], contour_b))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

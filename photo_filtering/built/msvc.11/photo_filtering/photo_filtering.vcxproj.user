@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>E:\Misc\data\gaoxin_test\input_data\img E:\Misc\data\gaoxin_test\input_data\pos\pos.fly E:\Misc\data\gaoxin_test\input_data\pos\test.kml E:\Misc\data\temp\crop_test 77</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>E:\Misc\data\gaoxin_test\input_data\img E:\Misc\data\gaoxin_test\input_data\pos\pos.fly E:\Misc\data\gaoxin_test\input_data\pos\test.kml E:\Misc\data\temp\crop_test\3 77</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>E:\Misc\data\gaoxin_test\input_data\img E:\Misc\data\gaoxin_test\input_data\pos\pos.fly E:\Misc\data\gaoxin_test\input_data\pos\test.kml E:\Misc\data\temp\crop_test 77</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>E:\Misc\data\gaoxin_test\input_data\img E:\Misc\data\gaoxin_test\input_data\pos\pos.fly E:\Misc\data\gaoxin_test\input_data\pos\test.kml E:\Misc\data\temp\crop_test\4 77</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

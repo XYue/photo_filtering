@@ -47,10 +47,20 @@ namespace filter
 		void get_bounding_rect(const std::vector<Point> & contour,
 			Point & min, Point & max);
 
-		bool point_in_polygon(const Point pt,
+		inline bool point_in_polygon(const Point pt,
 			const std::vector<Point> & contour,
 			const Point * min = NULL,
 			const Point * max = NULL);
+
+		inline bool point_in_polygon(const Eigen::Vector3d pt,
+			const std::vector<Point> & contour,
+			const Point * min = NULL,
+			const Point * max = NULL);
+
+		// a in b ?
+		inline bool polygon_in_polygon(
+			const std::vector<Point> & contour_a,
+			const std::vector<Point> & contour_b);
 
 		int proj_image_center(
 			const double & pitch,
@@ -62,6 +72,18 @@ namespace filter
 			const Eigen::Vector3d & camera_pos,
 			const Eigen::Vector4d & proj_plane,
 			Eigen::Vector3d & proj_point);
+
+		int proj_image_points(
+			const double & pitch,
+			const double & roll,
+			const double & yaw,
+			const double & img_width,
+			const double & img_height,
+			const double & focal,
+			const Eigen::Vector3d & camera_pos,
+			const Eigen::Vector4d & proj_plane,
+			const std::vector<Eigen::Vector3d> & image_points,
+			std::vector<Eigen::Vector3d> & proj_points);
 
 		inline double cos_deg(const double x);
 		inline double sin_deg(const double x);
@@ -76,6 +98,7 @@ namespace filter
 		int image_info_from_exif(
 			const std::string image_filename,
 			double & width, double & height, double & focal_length);
+
 
 	private:
 		std::string _image_folder;
