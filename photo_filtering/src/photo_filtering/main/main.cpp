@@ -12,7 +12,7 @@ void usage()
 {
 	std::cout<<std::endl;
 	std::cout<<"Input format:"<<std::endl;
-	std::cout<<"\tphoto_filtering.exe IMAGE_FOLDER POS_FILE CROP_KML OUTPUT_FOLDER"<<std::endl;
+	std::cout<<"\tphoto_filtering.exe IMAGE_FOLDER POS_FILE CROP_KML OUTPUT_FOLDER [GOUND_ELEVATION]"<<std::endl;
 	std::cout<<std::endl;
 }
 
@@ -20,7 +20,7 @@ void main(int argc, char ** argv)
 {
 	EnableMemLeakCheck();
 
-	if (argc != 5)
+	if (argc < 5 || argc > 6)
 	{
 		std::cout<<"ERROR: Invalid input arguments"<<std::endl;
 		usage();
@@ -29,9 +29,10 @@ void main(int argc, char ** argv)
 		std::string pos_file = argv[2];
 		std::string crop_kml_file = argv[3];
 		std::string output_folder = argv[4];
+		double altitude = (argc == 6 ? atof(argv[5]) : 0);
 
 		filter::PhotoFilter photo_filter(img_folder, pos_file);
-		if (photo_filter.Filter(crop_kml_file, output_folder))
+		if (photo_filter.Filter(crop_kml_file, output_folder, altitude, filter::PhotoFilter::FT_PROJECTED_POS))
 		{
 			std::cout<<"Filter failed."<<std::endl;
 		}
