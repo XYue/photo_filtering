@@ -12,7 +12,7 @@ void usage()
 {
 	std::cout<<std::endl;
 	std::cout<<"Input format:"<<std::endl;
-	std::cout<<"\tphoto_filtering.exe IMAGE_FOLDER POS_FILE CROP_KML OUTPUT_FOLDER [PLANE_ALTITUDE]"<<std::endl;
+	std::cout<<"\tphoto_filtering.exe IMAGE_FOLDER POS_FILE CROP_KML OUTPUT_FOLDER [GOUND_ELEVATION]"<<std::endl;
 	std::cout<<std::endl;
 }
 
