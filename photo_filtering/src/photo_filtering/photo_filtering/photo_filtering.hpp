@@ -36,7 +36,7 @@ namespace filter
 		~PhotoFilter();
 
 		int Filter(std::string crop_kml, std::string output_folder, 
-			double plane_altitude = 0, FilterType filter_type = FT_CAMERA_POS);
+			double plane_altitude = 0, const double * focal_length = NULL, FilterType filter_type = FT_CAMERA_POS);
 
 	protected:
 		int load_pos();

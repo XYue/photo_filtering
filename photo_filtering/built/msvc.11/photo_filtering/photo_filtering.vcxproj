@@ -58,7 +58,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(TINYXML2_LIB_TINYXML2);$(BOOST_LIB_FILESYSTEM);$(BOOST_LIB_SYSTEM);$(PROJ_LIB_PROJ);$(EXIV2_LIB_EXIV2);$(Z_LIB_Z)</AdditionalDependencies>
+      <AdditionalDependencies>$(TINYXML2_LIB_TINYXML2);$(BOOST_LIB_FILESYSTEM);$(BOOST_LIB_SYSTEM);$(PROJ_LIB_PROJ);$(EXIV2_LIB_EXIV2);$(Z_LIB_Z);$(GOOGLE_GFLAGS_LIB_GFLAGS)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -75,7 +75,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(TINYXML2_LIB_TINYXML2);$(BOOST_LIB_FILESYSTEM);$(BOOST_LIB_SYSTEM);$(PROJ_LIB_PROJ);$(EXIV2_LIB_EXIV2);$(Z_LIB_Z)</AdditionalDependencies>
+      <AdditionalDependencies>$(TINYXML2_LIB_TINYXML2);$(BOOST_LIB_FILESYSTEM);$(BOOST_LIB_SYSTEM);$(PROJ_LIB_PROJ);$(EXIV2_LIB_EXIV2);$(Z_LIB_Z);$(GOOGLE_GFLAGS_LIB_GFLAGS)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
