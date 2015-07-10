@@ -7,6 +7,7 @@
         <EXIV2_CONFIG_LINK>static</EXIV2_CONFIG_LINK>
         <PROJ_CONFIG_LINK>static</PROJ_CONFIG_LINK>
         <GOOGLE_GFLAGS_CONFIG_LINK>static</GOOGLE_GFLAGS_CONFIG_LINK>
+        <GDAL_CONFIG_LINK>static</GDAL_CONFIG_LINK>
     </PropertyGroup>
     
     <ImportGroup Label="PropertySheets">
@@ -28,6 +29,9 @@
         <Import
             Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\google\gflags\kit\google_gflags_latest.props"
             Condition="'$(GOOGLE_GFLAGS_IMPORT)'!='true'" />
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\gdal\kit\gdal_latest.props"
+            Condition="'$(GDAL_IMPORT)'!='true'" />
     </ImportGroup>
     
 </Project>

@@ -4,19 +4,19 @@
 
 #include "photo_filtering/photo_filtering.hpp"
 
-DEFINE_string(img_dir,     "",       "image directory");
-DEFINE_string(pos_file,     "",       "pos fullpath");
-DEFINE_string(aoi_kml,     "",       "kml file with AOI");
-DEFINE_string(out_dir,     "",       "output directory");
-DEFINE_string(filter_type,     "proj_center",       "[proj_center|camera_pos] set \"proj_center\" to filter photos with valid projected center, otherwise, filter with camera position instead");
-DEFINE_double(focal_length, -1,      "focal length (mm)");
-DEFINE_double(pixel_size, -1,      "pixel size (mm/pixel)");
-DEFINE_double(ground_elev, 0.0,      "ground elevation (m)");
+DEFINE_string(img_dir,     "",       "* image directory");
+DEFINE_string(pos_file,     "",       "* pos fullpath");
+DEFINE_string(aoi_kml,     "",       "* kml file with AOI");
+DEFINE_string(out_dir,     "",       "* output directory");
+DEFINE_string(filter_type,     "proj_center",       "[proj_center|camera_pos] (optional) set \"proj_center\" to filter photos with valid projected center, otherwise, filter with camera position instead");
+DEFINE_double(focal_length, -1,      "(optional) focal length (mm)");
+DEFINE_double(pixel_size, -1,      "(optional) pixel size (mm/pixel)");
+DEFINE_double(ground_elev, 0.0,      "(optional) ground elevation (m)");
 
 inline void EnableMemLeakCheck(void)
 {
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
-	//_CrtSetBreakAlloc(15560);
+	//_CrtSetBreakAlloc(463);
 }
 
 void usage()
@@ -50,10 +50,10 @@ void main(int argc, char ** argv)
 // 	}
 
 
+	google::ParseCommandLineFlags(&argc, &argv, true);
+
 	do 
 	{
-		google::ParseCommandLineFlags(&argc, &argv, true);
-
 		if (FLAGS_img_dir.empty())
 		{
 			std::cout<<"error: invalid img_dir"<<std::endl;
@@ -75,10 +75,10 @@ void main(int argc, char ** argv)
 			std::cout<<"error: invalid out_dir"<<std::endl;
 			break;
 		}
-		if (FLAGS_filter_type != "proj_center" ||
-			FLAGS_filter_type != "camera_pos")
+		if (FLAGS_filter_type.compare("proj_center") &&
+			FLAGS_filter_type.compare("camera_pos") )
 		{
-			std::cout<<"error: invalid filter_type"<<std::endl;
+			std::cout<<"error: invalid filter_type: "<<FLAGS_filter_type<<std::endl;
 			break;
 		}
 
@@ -112,10 +112,14 @@ void main(int argc, char ** argv)
 			filter_type))
 		{
 			std::cout<<"Filter failed."<<std::endl;
-		}
-
+			break;
+		} else {
+			std::cout<<"Filter done."<<std::endl;
+		}		
 
 	} while (0);
+
+	google::ShutDownCommandLineFlags();
 
 
 	std::cout<<"photo filtering."<<std::endl;
