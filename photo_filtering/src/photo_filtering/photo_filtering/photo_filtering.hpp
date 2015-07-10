@@ -36,7 +36,7 @@ namespace filter
 		~PhotoFilter();
 
 		int Filter(std::string crop_kml, std::string output_folder, 
-			double plane_altitude = 0, FilterType filter_type = FT_CAMERA_POS);
+			double plane_altitude = 0, const double * focal_length = NULL, FilterType filter_type = FT_CAMERA_POS);
 
 	protected:
 		int load_pos();
@@ -93,11 +93,16 @@ namespace filter
 
 		int filter_projected_pos(std::string crop_kml, 
 			std::string output_folder, 
-			double plane_altitude = 0.);
+			double plane_altitude = 0.,
+			const double * focal_length = NULL);
 
 		int image_info_from_exif(
 			const std::string image_filename,
 			double & width, double & height, double & focal_length);
+
+		int image_info_from_exif(
+			const std::string image_filename,
+			double & width, double & height);
 
 
 	private:

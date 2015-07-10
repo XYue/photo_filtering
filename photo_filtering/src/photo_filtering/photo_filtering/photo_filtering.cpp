@@ -13,6 +13,7 @@
 #include <Eigen/LU>
 #include <proj_api.h>
 #include <exiv2.hpp>
+#include <gdal_priv.h>
 
 #undef  SAFE_TEXT
 #define SAFE_TEXT(txt)  (txt ? txt : "")
@@ -33,7 +34,8 @@ namespace filter
 
 	int PhotoFilter::Filter( std::string crop_kml, 
 		std::string output_folder, 
-		double plane_altitude /*= 0*/,
+		double plane_altitude /*= 0*/, 
+		const double * focal_length /*= NULL*/,
 		FilterType filter_type /*= FT_CAMERA_POS*/ )
 	{
 		int ret = -1;
@@ -66,7 +68,7 @@ namespace filter
 				}
 				break;
 			case filter::PhotoFilter::FT_PROJECTED_POS:
-				if (filter_projected_pos(crop_kml, output_folder, plane_altitude))
+				if (filter_projected_pos(crop_kml, output_folder, plane_altitude, focal_length))
 				{
 					std::cout<<"filter_projected_pos failed."<<std::endl;
 					goto error0;
@@ -509,7 +511,10 @@ error0:
 		return ret;
 	}
 
-	int PhotoFilter::filter_projected_pos(std::string crop_kml, std::string output_folder, double plane_altitude /*= 0.*/)
+	int PhotoFilter::filter_projected_pos(
+		std::string crop_kml, std::string output_folder,
+		double plane_altitude /*= 0.*/, 
+		const double * focal_length /*= NULL*/)
 	{
 		int ret = -1;
 
@@ -618,11 +623,22 @@ error0:
 				
 				// read width, height and focal from exif
 				double img_width, img_height, img_focal;
-				if (image_info_from_exif(image_fullname, img_width, img_height, img_focal))
+				if (focal_length && *focal_length > DBL_EPSILON)
 				{
-					std::cout<<"image_info_from_exif failed. "<<image_fullname<<std::endl;
-					continue;
+					img_focal = *focal_length;
+					if (image_info_from_exif(image_fullname, img_width, img_height))
+					{
+						std::cout<<"image_info_from_exif failed. "<<image_fullname<<std::endl;
+						continue;
+					}
+				} else {
+					if (image_info_from_exif(image_fullname, img_width, img_height, img_focal))
+					{
+						std::cout<<"image_info_from_exif failed. "<<image_fullname<<std::endl;
+						continue;
+					}
 				}
+				
 
 				// convert to utm
 				Eigen::Vector3d cam_pos(photo.longitude, photo.latitude, photo. altitude);
@@ -761,8 +777,26 @@ error0:
 	{
 		int ret = -1;
 
+		CPLSetConfigOption("GDAL_FILENAME_IS_UTF8","NO");
+		GDALAllRegister();
+
 		do 
 		{
+			double tmp_w, tmp_h, tmp_f;
+
+			GDALDataset * ds = (GDALDataset *)GDALOpen(image_filename.c_str(), GA_ReadOnly);
+			if (ds)
+			{
+				tmp_w = ds->GetRasterXSize();
+				tmp_h = ds->GetRasterYSize();
+
+				GDALClose(ds);
+			} else {
+				std::cout<<"Failed to open "<<image_filename<<std::endl;
+				break;
+			}
+
+
 			Exiv2::Image::AutoPtr exiv2_img = Exiv2::ImageFactory::open(image_filename);
 			if(!(exiv2_img.get()))
 			{
@@ -770,40 +804,37 @@ error0:
 				break;
 			}
 
-
-			double tmp_w, tmp_h, tmp_f;
-
 			exiv2_img->readMetadata();
 			Exiv2::ExifData & exif_data = exiv2_img->exifData();
 
 
-			Exiv2::ExifData::const_iterator exif_width = exif_data.findKey(Exiv2::ExifKey("Exif.Photo.PixelXDimension"));
-			if (exif_width != exif_data.end())
-			{
-				tmp_w = exif_width->toFloat();			
-			} else {
-				exif_width = exif_data.findKey(Exiv2::ExifKey("Exif.Image.ImageWidth"));
-				if (exif_width == exif_data.end())
-				{
-					std::cout<<"ImageWidth invalid. "<<image_filename<<std::endl;
-					break;
-				}
-				tmp_w = exif_width->toFloat();
-			}
-
-			Exiv2::ExifData::const_iterator exif_height = exif_data.findKey(Exiv2::ExifKey("Exif.Photo.PixelYDimension"));
-			if (exif_height != exif_data.end())
-			{
-				tmp_h = exif_height->toFloat();			
-			} else {
-				exif_height = exif_data.findKey(Exiv2::ExifKey("Exif.Image.ImageLength"));
-				if (exif_height == exif_data.end())
-				{
-					std::cout<<"ImageHeight invalid. "<<image_filename<<std::endl;
-					break;
-				}
-				tmp_h = exif_height->toFloat();
-			}
+// 			Exiv2::ExifData::const_iterator exif_width = exif_data.findKey(Exiv2::ExifKey("Exif.Photo.PixelXDimension"));
+// 			if (exif_width != exif_data.end())
+// 			{
+// 				tmp_w = exif_width->toFloat();			
+// 			} else {
+// 				exif_width = exif_data.findKey(Exiv2::ExifKey("Exif.Image.ImageWidth"));
+// 				if (exif_width == exif_data.end())
+// 				{
+// 					std::cout<<"ImageWidth invalid. "<<image_filename<<std::endl;
+// 					break;
+// 				}
+// 				tmp_w = exif_width->toFloat();
+// 			}
+// 
+// 			Exiv2::ExifData::const_iterator exif_height = exif_data.findKey(Exiv2::ExifKey("Exif.Photo.PixelYDimension"));
+// 			if (exif_height != exif_data.end())
+// 			{
+// 				tmp_h = exif_height->toFloat();			
+// 			} else {
+// 				exif_height = exif_data.findKey(Exiv2::ExifKey("Exif.Image.ImageLength"));
+// 				if (exif_height == exif_data.end())
+// 				{
+// 					std::cout<<"ImageHeight invalid. "<<image_filename<<std::endl;
+// 					break;
+// 				}
+// 				tmp_h = exif_height->toFloat();
+// 			}
 
 
 			Exiv2::ExifData::const_iterator exif_focal = exif_data.findKey(Exiv2::ExifKey("Exif.Photo.FocalLength"));
@@ -836,7 +867,40 @@ error0:
 
 			ret = 0;
 		} while (0);
+
+		GDALDestroyDriverManager();
 		
+		return ret;
+	}
+
+	int PhotoFilter::image_info_from_exif(
+		const std::string image_filename,
+		double & width, double & height)
+	{
+		int ret = -1;
+
+		CPLSetConfigOption("GDAL_FILENAME_IS_UTF8","NO");
+		GDALAllRegister();
+
+		do 
+		{
+			GDALDataset * ds = (GDALDataset *)GDALOpen(image_filename.c_str(), GA_ReadOnly);
+			if (ds)
+			{
+				width = ds->GetRasterXSize();
+				height = ds->GetRasterYSize();
+
+				GDALClose(ds);
+			} else {
+				std::cout<<"Failed to open "<<image_filename<<std::endl;
+				break;
+			}
+
+			ret = 0;
+		} while (0);
+
+		GDALDestroyDriverManager();
+
 		return ret;
 	}
 
