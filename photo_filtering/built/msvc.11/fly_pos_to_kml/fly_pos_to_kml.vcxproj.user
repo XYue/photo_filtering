@@ -1,7 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>E:\data\gaoxin\pos\pos.fly E:\data\gaoxin\pos\pos.kml</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--pos_file E:\Misc\data\temp\crop_test\5\pos\pos.fly --kml_file E:\Misc\data\temp\crop_test\5\pos\pos_linestring.kml --output_point --output_proj_image --img_width 6000 --img_height 4000 --focal_length 30 --pixel_size 0.0039 --ground_elev 83</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArguments>--pos_file E:\Misc\data\temp\crop_test\5\pos\pos.fly --kml_file E:\Misc\data\temp\crop_test\5\pos\pos_linestring.kml</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
