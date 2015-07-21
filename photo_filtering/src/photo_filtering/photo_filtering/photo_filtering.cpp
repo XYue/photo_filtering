@@ -678,8 +678,8 @@ error0:
 				useful_pts[3] = Eigen::Vector3d(img_width/2., img_height/2., img_focal);
 				useful_pts[4] = Eigen::Vector3d(img_width/2., -img_height/2., img_focal);
 
-				double boundary_unit_x = /*img_width / 8.*/0;
-				double boundary_unit_y = /*img_height / 8.*/0;
+				double boundary_unit_x = img_width / 8.;
+				double boundary_unit_y = img_height / 8.;
 				useful_pts[5] = Eigen::Vector3d(-img_width/2. + boundary_unit_x, -img_height/2. + boundary_unit_y, img_focal);
 				useful_pts[6] = Eigen::Vector3d(-img_width/2. + boundary_unit_x, img_height/2. - boundary_unit_y, img_focal);
 				useful_pts[7] = Eigen::Vector3d(img_width/2. - boundary_unit_x, img_height/2. -boundary_unit_y, img_focal);
@@ -702,7 +702,8 @@ error0:
 
 				// image contour
 				std::vector<Point> image_contour;
-				for (int i_co = 1; i_co < 5; ++i_co)
+				int start_index = 5;
+				for (int i_co = start_index; i_co < start_index + 4; ++i_co)
 				{
 					Point pt = {proj_pts[i_co](0), proj_pts[i_co](1), proj_pts[i_co](2)};
 					image_contour.push_back(pt);
