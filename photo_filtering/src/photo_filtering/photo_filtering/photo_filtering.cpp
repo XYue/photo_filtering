@@ -700,13 +700,22 @@ error0:
 					continue;
 				}
 
-				// image contour
 				std::vector<Point> image_contour;
-				int start_index = 5;
+				int start_index = 1;
 				for (int i_co = start_index; i_co < start_index + 4; ++i_co)
 				{
 					Point pt = {proj_pts[i_co](0), proj_pts[i_co](1), proj_pts[i_co](2)};
 					image_contour.push_back(pt);
+				}
+				if (!quadrilateral_convex(image_contour)) continue;
+
+				// image contour
+				std::vector<Point> image_intersection_contour;
+				start_index = 1;
+				for (int i_co = start_index; i_co < start_index + 4; ++i_co)
+				{
+					Point pt = {proj_pts[i_co](0), proj_pts[i_co](1), proj_pts[i_co](2)};
+					image_intersection_contour.push_back(pt);
 				}
 
 				// boost intersect				
@@ -729,7 +738,7 @@ error0:
 					point_in_polygon(proj_pts[11], contour) ||
 					point_in_polygon(proj_pts[12], contour) ||*/
 					boost::geometry::intersects(aoi_contour, camera_range) ||
-					polygon_in_polygon(contour, image_contour))
+					polygon_in_polygon(contour, image_intersection_contour))
 				{
 					std::string dst_image_fullname = img_dir + "\\" + photo.filename;
 					boost::filesystem::copy_file(image_fullname,
@@ -1062,6 +1071,48 @@ error0:
 		}
 
 		return true;
+	}
+
+	bool PhotoFilter::quadrilateral_convex(const std::vector<Point> & vertices)
+	{
+		bool ret = false;
+
+		do 
+		{
+			if (vertices.size() != 4) break;
+
+			double a1 = vertices[2].y - vertices[0].y;
+			double b1 = vertices[0].x - vertices[2].x;
+			double c1 = (vertices[2].x - vertices[0].x) * vertices[0].y -
+				(vertices[2].y - vertices[0].y) * vertices[0].x;
+
+			double a2 = vertices[3].y - vertices[1].y;
+			double b2 = vertices[1].x - vertices[3].x;
+			double c2 = (vertices[3].x - vertices[1].x) * vertices[1].y -
+				(vertices[3].y - vertices[1].y) * vertices[1].x;
+
+			double intersection_x = (b1 * c2 - b2 * c1) / (a1 * b2 - a2 * b1);
+			double intersection_y = (a1 * c2 - a2 * c1) / (a2 * b1 - a1 * b2);
+			
+			double min_x, max_x, min_y, max_y;
+			min_x = std::min(vertices[0].x, vertices[2].x);
+			max_x = std::max(vertices[0].x, vertices[2].x);
+			min_y = std::min(vertices[0].y, vertices[2].y);
+			max_y = std::max(vertices[0].y, vertices[2].y);
+			if (intersection_x < min_x || intersection_x > max_x ||
+				intersection_y < min_y || intersection_y > max_y) break;
+
+			min_x = std::min(vertices[1].x, vertices[3].x);
+			max_x = std::max(vertices[1].x, vertices[3].x);
+			min_y = std::min(vertices[1].y, vertices[3].y);
+			max_y = std::max(vertices[1].y, vertices[3].y);
+			if (intersection_x < min_x || intersection_x > max_x ||
+				intersection_y < min_y || intersection_y > max_y) break;
+
+			ret = true;
+		} while (0);
+
+		return ret;
 	}
 
 }
