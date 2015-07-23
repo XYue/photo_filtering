@@ -104,6 +104,7 @@ namespace filter
 			const std::string image_filename,
 			double & width, double & height);
 
+		bool quadrilateral_convex(const std::vector<Point> & vertices);
 
 	private:
 		std::string _image_folder;

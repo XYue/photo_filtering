@@ -3,12 +3,23 @@
             
     <PropertyGroup>
         <TINYXML2_CONFIG_LINK>static</TINYXML2_CONFIG_LINK>
+        <PROJ_CONFIG_LINK>static</PROJ_CONFIG_LINK>
+        <GOOGLE_GFLAGS_CONFIG_LINK>static</GOOGLE_GFLAGS_CONFIG_LINK>
     </PropertyGroup>
     
     <ImportGroup Label="PropertySheets">
         <Import
             Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\tinyxml2\kit\tinyxml2_latest.props"
             Condition="'$(TINYXML2_IMPORT)'!='true'" />
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\eigen\kit\eigen_latest.props"
+            Condition="'$(EIGEN_IMPORT)'!='true'" />
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\proj\kit\proj_latest.props"
+            Condition="'$(PROJ_IMPORT)'!='true'" />
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\google\gflags\kit\google_gflags_latest.props"
+            Condition="'$(GOOGLE_GFLAGS_IMPORT)'!='true'" />
     </ImportGroup>
     
 </Project>
