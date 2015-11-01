@@ -31,6 +31,7 @@ namespace cvt
 
 	public:
 		PosKmlConverter(std::string pos_file);
+		PosKmlConverter(std::string path, bool is_pos_file);
 		~PosKmlConverter();
 
 		int Convert(std::string kml_file,
@@ -40,6 +41,8 @@ namespace cvt
 
 	protected:
 		int load_pos();
+
+		int parse_photo_folder();
 
 		int proj_image_points(
 			const double & pitch, const double & roll, const double & yaw, 
@@ -55,7 +58,9 @@ namespace cvt
 		inline double sin_deg(const double x);
 
 	private:
+		std::string _photo_folder;
 		std::string _pos_file;
+
 		std::vector<PhotoPOS> _photos;
 	};
 }

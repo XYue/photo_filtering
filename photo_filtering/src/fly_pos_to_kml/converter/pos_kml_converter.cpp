@@ -5,6 +5,9 @@
 #include <sstream>
 #include <iomanip>
 
+#define NOMINMAX
+#include <windows.h>
+
 #include <tinyxml2.h>
 #include <proj_api.h>
 #include <Eigen/LU>
@@ -17,6 +20,18 @@ namespace cvt
 		_pos_file(pos_file)
 	{
 
+	}
+
+	PosKmlConverter::PosKmlConverter(std::string path, bool is_pos_file)
+	{
+		if (is_pos_file)
+		{
+			_pos_file = path;
+			_photo_folder = "";
+		} else {
+			_photo_folder = path;
+			_pos_file = "";
+		}
 	}
 
 	PosKmlConverter::~PosKmlConverter()
@@ -36,10 +51,22 @@ namespace cvt
 
 		do 
 		{
-			if (_photos.empty() && load_pos())
+			if (!_photo_folder.empty())
 			{
-				std::cout<<"load_pos failed."<<std::endl;
-				break;
+				if (parse_photo_folder())
+				{
+					std::cout<<"parse_photo_folder failed."<<std::endl;
+					break;
+				}
+			}
+
+			if (_photos.empty())
+			{
+				if (load_pos())
+				{
+					std::cout<<"load_pos failed."<<std::endl;
+					break;
+				}				
 			}
 
 
@@ -521,6 +548,20 @@ error0:
 		int numPI = (int)(x/180.0);
 		double rad = (x-180.0*numPI)*M_PI/180.0;
 		return (numPI/2*2 == numPI ? sin(rad) : -sin(rad));
+	}
+
+	int PosKmlConverter::parse_photo_folder()
+	{
+		int ret = -1;
+
+		do 
+		{
+
+
+			ret = 0;
+		} while (0);
+
+		return ret;
 	}
 
 }
