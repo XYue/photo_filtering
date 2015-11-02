@@ -5,9 +5,14 @@
 #include <sstream>
 #include <iomanip>
 
+#define NOMINMAX
+#include <windows.h>
+
 #include <tinyxml2.h>
 #include <proj_api.h>
 #include <Eigen/LU>
+#include <boost/filesystem.hpp>
+#include <exiv2.hpp>
 
 namespace cvt
 {
@@ -17,6 +22,24 @@ namespace cvt
 		_pos_file(pos_file)
 	{
 
+	}
+
+	PosKmlConverter::PosKmlConverter(std::string path, bool is_pos_file)
+	{
+		if (is_pos_file)
+		{
+			_pos_file = path;
+			_photo_folder = "";
+		} else {
+			_photo_folder = path;
+			_pos_file = "";
+		}
+	}
+
+	PosKmlConverter::PosKmlConverter()
+	{
+		_pos_file = "";
+		_photo_folder = "";
 	}
 
 	PosKmlConverter::~PosKmlConverter()
@@ -36,10 +59,22 @@ namespace cvt
 
 		do 
 		{
-			if (_photos.empty() && load_pos())
+			if (!_photo_folder.empty())
 			{
-				std::cout<<"load_pos failed."<<std::endl;
-				break;
+				if (parse_photo_folder(kml_file))
+				{
+					std::cout<<"parse_photo_folder failed."<<std::endl;
+					break;
+				}
+			}
+
+			if (_photos.empty())
+			{
+				if (load_pos())
+				{
+					std::cout<<"load_pos failed."<<std::endl;
+					break;
+				}				
 			}
 
 
@@ -521,6 +556,277 @@ error0:
 		int numPI = (int)(x/180.0);
 		double rad = (x-180.0*numPI)*M_PI/180.0;
 		return (numPI/2*2 == numPI ? sin(rad) : -sin(rad));
+	}
+
+	int PosKmlConverter::parse_photo_folder( const std::string & kml_filename )
+{
+		int ret = -1;
+
+		do 
+		{
+			if (!boost::filesystem::is_directory(_photo_folder))
+			{
+				std::cout<< _photo_folder<<" folder not exists."<<std::endl;
+				break; 
+			}
+
+
+			std::vector<PhotoPOS> pos;
+			std::vector<std::string> img_files;
+
+			// find all images in output folder
+			HANDLE hFind = INVALID_HANDLE_VALUE;
+			WIN32_FIND_DATA ffd;
+			std::string spec;
+			spec = _photo_folder + "\\*";
+			hFind = FindFirstFile(spec.c_str(), &ffd);
+			if (hFind == INVALID_HANDLE_VALUE) break;
+
+			do 
+			{
+				if (strcmp(ffd.cFileName, ".") != 0 && 
+					strcmp(ffd.cFileName, "..") != 0) 
+				{
+					if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
+					{
+						std::string name = ffd.cFileName;
+						std::string ext = name.substr(name.find_last_of('.')+1);
+						if (img_ext_satisfied(ext))
+						{
+							std::string img_filenmae = _photo_folder + "\\" + name;
+
+							PhotoPOS p;
+							if (read_pos_from_image_exif(img_filenmae, p))
+							{
+								std::cout<<"failed to read pos from "<<img_filenmae<<std::endl;
+								FindClose(hFind);
+								goto error0;
+							}
+
+							pos.push_back(p);
+							img_files.push_back(img_filenmae)							;
+						}
+					}
+				}
+			} while (FindNextFile(hFind, &ffd) != 0);
+
+			if (GetLastError() != ERROR_NO_MORE_FILES) 
+			{
+				FindClose(hFind);
+				goto error0;
+			}
+
+			FindClose(hFind);
+			hFind = INVALID_HANDLE_VALUE;
+
+
+			// write down pos
+			std::string tmp_pos_filename = kml_filename + ".posfile";
+			if (write_pos_file(tmp_pos_filename, pos))
+			{
+				std::cout<<"failed to write pos file. "<< tmp_pos_filename  <<std::endl;
+				break;
+			}
+
+
+			_pos_file = tmp_pos_filename;
+			_photos.swap(pos);
+
+
+			ret = 0;
+		} while (0);
+error0:
+
+		return ret;
+	}
+
+	bool PosKmlConverter::img_ext_satisfied( const std::string & ext )
+	{
+		std::string suffix = ext;
+		std::transform(suffix.begin(), suffix.end(), suffix.begin(), ::tolower);
+		if (suffix.compare("jpeg") && suffix.compare("jpg") && 
+			suffix.compare("tif") && suffix.compare("tiff") )
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	int PosKmlConverter::read_pos_from_image_exif( 
+		const std::string & img_file, 
+		PhotoPOS & pos )
+	{
+		int rtn = -1;
+
+		do 
+		{
+			if (img_file.empty())
+				break;
+
+			Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(img_file);
+			if(!(image.get()))
+			{
+				std::cout<<"exif open image failed..."<<std::endl;
+				break;
+			}
+
+			PhotoPOS tmp_pos;
+
+			image->readMetadata();
+			Exiv2::ExifData & exifData = image->exifData();
+
+			Exiv2::ExifData::const_iterator gps_longitude =
+				exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude"));
+			Exiv2::ExifData::const_iterator gps_latitude =
+				exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude"));
+			Exiv2::ExifData::const_iterator gps_altitude =
+				exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSAltitude"));
+			Exiv2::ExifData::const_iterator comment = 
+				exifData.findKey(Exiv2::ExifKey("Exif.Photo.UserComment"));
+
+			if(gps_longitude != exifData.end() && 
+				gps_latitude != exifData.end() &&
+				gps_altitude != exifData.end())
+			{
+				double value0, value1, value2;
+
+				value0 = gps_longitude->value().toFloat(0);
+				value1 = gps_longitude->value().toFloat(1);
+				value2 = gps_longitude->value().toFloat(2);
+				tmp_pos.longitude = value0+(value1+value2/60.)/60.;
+
+				value0 = gps_latitude->value().toFloat(0);
+				value1 = gps_latitude->value().toFloat(1);
+				value2 = gps_latitude->value().toFloat(2);
+				tmp_pos.latitude = value0+(value1+value2/60.)/60.;
+
+				tmp_pos.altitude = gps_altitude->toFloat();
+			} else {
+				tmp_pos.longitude = 0.;
+				tmp_pos.latitude = 0.;
+				tmp_pos.altitude = 0.;
+			}
+
+			if (comment != exifData.end())
+			{
+				std::string info =comment->value().toString();
+				std::transform(info.begin(), info.end(), info.begin(), ::tolower);
+
+				std::stringstream sstr;
+				sstr << info;
+
+				std::string buf;
+				sstr >> buf;
+
+				while (!buf.empty())
+				{
+					if (!buf.compare("pitch"))
+					{
+						buf.clear();
+						sstr >> buf;
+						if (buf.empty()) goto error0;
+
+						std::stringstream value;
+						value << buf;
+						value >> tmp_pos.pitch;
+					} else if (!buf.compare("roll")) {
+						buf.clear();
+						sstr >> buf;
+						if (buf.empty()) goto error0;
+
+						std::stringstream value;
+						value << buf;
+						value >> tmp_pos.roll;
+					} else if (!buf.compare("yaw")) {
+						buf.clear();
+						sstr >> buf;
+						if (buf.empty()) goto error0;
+
+						std::stringstream value;
+						value << buf;
+						value >> tmp_pos.yaw;
+					}
+
+					buf.clear();
+					sstr >> buf;
+				}
+			} else {
+				tmp_pos.pitch = 0.;
+				tmp_pos.roll = 0.;
+				tmp_pos.yaw = 0.;
+			}
+
+			tmp_pos.filename = img_file;
+			pos = tmp_pos;
+
+			rtn = 0;
+		} while (0);
+error0:
+
+		return rtn;
+	}
+
+	int PosKmlConverter::write_pos_file( 
+		const std::string & pos_filename, 
+		const std::vector<PhotoPOS> & pos )
+	{
+		int rtn = -1;
+
+		do 
+		{
+			std::ofstream pos_file(pos_filename, std::ios::out);
+			if (pos_file.is_open())
+			{
+				int num_img = pos.size();
+				for(int i_img = 0; i_img < num_img; ++i_img)
+				{
+					const PhotoPOS & p = pos[i_img];
+
+					pos_file << i_img << " day time ";
+					pos_file << std::fixed << std::setprecision(15)
+						<< p.longitude << " "
+						<< p.latitude << " "
+						<< p.altitude << " "
+						<< p.pitch << " "
+						<< p.roll << " "
+						<< p.yaw << " "
+						<< p.filename << std::endl;
+				}
+				pos_file.close(); 
+			}
+
+			rtn = 0;
+		} while (0);
+error0:
+
+		return rtn;
+	}
+
+	int PosKmlConverter::SetInputPath( const std::string & input_path )
+	{
+		int ret = -1;
+
+		do 
+		{
+			if (boost::filesystem::is_directory(input_path))
+			{
+				_photo_folder = input_path;
+				_pos_file = "";
+				_photos.swap(std::vector<PhotoPOS>());
+			} else if (boost::filesystem::is_regular_file(input_path)) {
+				_pos_file = input_path;
+				_photo_folder = "";
+				_photos.swap(std::vector<PhotoPOS>());
+			} else {
+				std::cout<<"invalid input path. "<<input_path<<std::endl;
+				break;
+			}
+
+			ret = 0;
+		} while (0);
+
+		return ret;
 	}
 
 }

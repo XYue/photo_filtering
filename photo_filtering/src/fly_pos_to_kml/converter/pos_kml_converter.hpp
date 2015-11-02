@@ -30,8 +30,12 @@ namespace cvt
 		} PhotoPOS;
 
 	public:
+		PosKmlConverter();
 		PosKmlConverter(std::string pos_file);
+		PosKmlConverter(std::string path, bool is_pos_file);
 		~PosKmlConverter();
+
+		int SetInputPath(const std::string & input_path);
 
 		int Convert(std::string kml_file,
 			OutputOption option = OO_LINE_STRING,
@@ -40,6 +44,8 @@ namespace cvt
 
 	protected:
 		int load_pos();
+
+		int parse_photo_folder(const std::string & kml_filename);
 
 		int proj_image_points(
 			const double & pitch, const double & roll, const double & yaw, 
@@ -54,8 +60,20 @@ namespace cvt
 		inline double cos_deg(const double x);
 		inline double sin_deg(const double x);
 
+		inline bool img_ext_satisfied(const std::string & ext);
+
+		int read_pos_from_image_exif(
+			const std::string & img_file,
+			PhotoPOS & pos);
+
+		int write_pos_file(
+			const std::string & pos_filename,
+			const std::vector<PhotoPOS> & pos);
+
 	private:
+		std::string _photo_folder;
 		std::string _pos_file;
+
 		std::vector<PhotoPOS> _photos;
 	};
 }

@@ -4,7 +4,9 @@
 
 #include "converter\pos_kml_converter.hpp"
 
-DEFINE_string(pos_file,     "",       "* pos fullpath");
+// DEFINE_string(pos_file,     "",       "* pos fullpath");
+// DEFINE_string(img_dir,     "",       "* directory which contains images with pos exif infomation.");
+DEFINE_string(input_path,     "",       "* directory which contains images with pos exif infomation.\n or pos file full path.");
 DEFINE_string(kml_file,     "",       "* output kml file");
 DEFINE_bool(output_point, false, "(optional) output camera positions in kml file.");
 DEFINE_bool(output_proj_image, false, "(optional) output camera projections in kml file.");
@@ -18,44 +20,26 @@ DEFINE_double(ground_elev, 0.0,      "(optional) ground elevation (m)");
 inline void EnableMemLeakCheck(void)
 {
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
-	//_CrtSetBreakAlloc(15560);
-}
-
-void usage()
-{
-	std::cout<<std::endl;
-	std::cout<<"Input format:"<<std::endl;
-	std::cout<<"fly_pos_to_kml.exe POS_FILE OUTPUT_KML"<<std::endl;
-	std::cout<<std::endl;
+	//_CrtSetBreakAlloc(423);
 }
 
 void main(int argc, char ** argv)
 {
 	EnableMemLeakCheck();
 
-// 	if (argc != 3)
-// 	{
-// 		std::cout<<"ERROR: Invalid input arguments"<<std::endl;
-// 		usage();
-// 	} else {
-// 		std::string pos_file = argv[1];
-// 		std::string output_kml = argv[2];
-// 
-// 		cvt::PosKmlConverter cvt(pos_file);
-// 		if (cvt.Convert(output_kml))
-// 		{
-// 			std::cout<<"Convert failed."<<std::endl;
-// 		}
-// 	}
-
-
 	google::ParseCommandLineFlags(&argc, &argv, true);
 
 	do 
 	{
-		if (FLAGS_pos_file.empty())
+// 		if (FLAGS_pos_file.empty() && FLAGS_img_dir.empty())
+// 		{
+// 			std::cout<<"error: invalid pos_file or image folder"<<std::endl;
+// 			break;
+// 		}
+
+		if (FLAGS_input_path.empty())
 		{
-			std::cout<<"error: invalid pos_file"<<std::endl;
+			std::cout<<"error: invalid input path"<<std::endl;
 			break;
 		}
 
@@ -75,7 +59,25 @@ void main(int argc, char ** argv)
 
 		double focal_in_pixel = FLAGS_pixel_size > DBL_EPSILON ? FLAGS_focal_length/ FLAGS_pixel_size : 0.;
 
-		cvt::PosKmlConverter cvt(FLAGS_pos_file);
+// 		std::string path;
+// 		bool is_pos_file = false;
+// 		if (!FLAGS_pos_file.empty())
+// 		{
+// 			path = FLAGS_pos_file;
+// 			is_pos_file = true;
+// 		} else if (!FLAGS_img_dir.empty()) {
+// 			path = FLAGS_img_dir;
+// 			is_pos_file = false;
+// 		} else {
+// 			std::cout<<"error: invalid pos_file or image folder"<<std::endl;
+// 			break;
+// 		}
+		//cvt::PosKmlConverter cvt(FLAGS_pos_file);
+		//cvt::PosKmlConverter cvt(path, is_pos_file);
+
+
+		cvt::PosKmlConverter cvt;
+		cvt.SetInputPath(FLAGS_input_path);
 		if (cvt.Convert(FLAGS_kml_file, option,
 			FLAGS_img_width, FLAGS_img_height, focal_in_pixel,
 			FLAGS_ground_elev))
