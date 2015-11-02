@@ -5,6 +5,8 @@
         <TINYXML2_CONFIG_LINK>static</TINYXML2_CONFIG_LINK>
         <PROJ_CONFIG_LINK>static</PROJ_CONFIG_LINK>
         <GOOGLE_GFLAGS_CONFIG_LINK>static</GOOGLE_GFLAGS_CONFIG_LINK>
+        <BOOST_CONFIG_LINK>static</BOOST_CONFIG_LINK>
+        <EXIV2_CONFIG_LINK>static</EXIV2_CONFIG_LINK>
     </PropertyGroup>
     
     <ImportGroup Label="PropertySheets">
@@ -20,6 +22,12 @@
         <Import
             Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\google\gflags\kit\google_gflags_latest.props"
             Condition="'$(GOOGLE_GFLAGS_IMPORT)'!='true'" />
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\boost\kit\boost_latest.props"
+            Condition="'$(BOOST_IMPORT)'!='true'" />
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\exiv2\kit\exiv2_latest.props"
+            Condition="'$(EXIV2_IMPORT)'!='true'" />
     </ImportGroup>
     
 </Project>
