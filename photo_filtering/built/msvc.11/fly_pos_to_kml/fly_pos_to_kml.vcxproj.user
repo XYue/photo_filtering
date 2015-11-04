@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-img_dir E:\data\gaoxin\test -kml_file E:\data\gaoxin\test\test.kml -output_point</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-focal_length 30 -ground_elev 88 -img_height 4000 -img_width 6000 -input_path E:\Misc\data\temp\cc_test\img -kml_file E:\Misc\data\temp\cc_test\img\test.kml -output_point -output_proj_image -pixel_size 0.0039</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

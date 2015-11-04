@@ -532,7 +532,9 @@ error0:
 		double west = std::numeric_limits<double>::max();
 		size_t num_photos = _photos.size();
 		for (int i_c = 0; i_c < num_photos; ++i_c)
-			west = std::min(west, _photos[i_c].longitude);
+			west = std::min(west,
+			_photos[i_c].longitude > std::numeric_limits<double>::epsilon() ?
+			_photos[i_c].longitude : west);
 
 		int utm_zone = static_cast<int>(west / 6.) + 31;
 		if (utm_zone <0 || utm_zone > 60) 
