@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="main">
+      <UniqueIdentifier>{9b88dce2-2021-4e75-9c74-166b8f359970}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="exif_toolkit">
+      <UniqueIdentifier>{f92d4072-011d-4a61-8a87-4ee5af1dfb8f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\photo_exif_toolkit\main\main.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\photo_exif_toolkit\exif_toolkit\exif_toolkit.cpp">
+      <Filter>exif_toolkit</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\photo_exif_toolkit\exif_toolkit\exif_toolkit.hpp">
+      <Filter>exif_toolkit</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
