@@ -168,7 +168,7 @@ error0:
 			std::string line;
 			std::stringstream sstr;
 			std::getline(file, line);
-			while (file.good())
+			while (file.good() || !line.empty())
 			{
 				PhotoPos photo;
 
@@ -220,7 +220,7 @@ error0:
 			std::string line;
 			std::stringstream sstr;
 			std::getline(file, line);
-			while (file.good())
+			while (file.good() || !line.empty())
 			{
 				std::string name;
 
