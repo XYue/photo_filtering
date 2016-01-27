@@ -12,6 +12,7 @@ DEFINE_string(filter_type,     "proj_center",       "[proj_center|camera_pos] (o
 DEFINE_double(focal_length, -1,      "(optional) focal length (mm)");
 DEFINE_double(pixel_size, -1,      "(optional) pixel size (mm/pixel)");
 DEFINE_double(ground_elev, 0.0,      "(optional) ground elevation (m)");
+DEFINE_bool(not_in, false, "output the images NOT in the AOI, ONLY work for \"camera_pos\" filter_type; default(false)");
 
 inline void EnableMemLeakCheck(void)
 {
@@ -100,12 +101,13 @@ void main(int argc, char ** argv)
 			<<"aoi_kml: "<<FLAGS_aoi_kml<<std::endl
 			<<"out_dir: "<<FLAGS_out_dir<<std::endl
 			<<"filter_type: "<<FLAGS_filter_type<<std::endl
-			<<"ground_elev: "<<FLAGS_ground_elev<<std::endl;
+			<<"ground_elev: "<<FLAGS_ground_elev<<std::endl
+			<<"not_in: "<<FLAGS_not_in<<std::endl;
 		if (focal_len_in_pixel > DBL_EPSILON)
 			std::cout<<"focal_length_in_pixel: "<<focal_len_in_pixel<<std::endl;
 
 
-		filter::PhotoFilter photo_filter(FLAGS_img_dir, FLAGS_pos_file);
+		filter::PhotoFilter photo_filter(FLAGS_img_dir, FLAGS_pos_file, FLAGS_not_in);
 		if (photo_filter.Filter(FLAGS_aoi_kml, FLAGS_out_dir,
 			FLAGS_ground_elev, 
 			focal_len_in_pixel > DBL_EPSILON ? &focal_len_in_pixel : NULL,

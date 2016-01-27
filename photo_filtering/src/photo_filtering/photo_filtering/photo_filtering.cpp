@@ -21,8 +21,8 @@
 namespace filter
 {
 
-	PhotoFilter::PhotoFilter( std::string img_folder, std::string pos_file ) :
-		_image_folder(img_folder), _pos_file(pos_file)
+	PhotoFilter::PhotoFilter( std::string img_folder, std::string pos_file, bool not_in /*= false*/ ) :
+		_image_folder(img_folder), _pos_file(pos_file), _not_in_aoi(not_in)
 	{
 
 	}
@@ -480,7 +480,8 @@ error0:
 				if (!boost::filesystem::exists(image_fullname)) continue;
 
 				Point pt = {photo.longitude, photo.latitude, photo.altitude};	
-				if (point_in_polygon(pt, contour))
+				if ( (!_not_in_aoi && point_in_polygon(pt, contour)) || 
+					(_not_in_aoi && !point_in_polygon(pt, contour)))
 				{
 					std::string dst_image_fullname = img_dir + "\\" + photo.filename;
 					boost::filesystem::copy_file(image_fullname,

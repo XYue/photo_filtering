@@ -32,7 +32,7 @@ namespace filter
 		};
 
 	public:
-		PhotoFilter(std::string img_folder, std::string pos_file);
+		PhotoFilter(std::string img_folder, std::string pos_file, bool not_in = false);
 		~PhotoFilter();
 
 		int Filter(std::string crop_kml, std::string output_folder, 
@@ -109,6 +109,8 @@ namespace filter
 	private:
 		std::string _image_folder;
 		std::string _pos_file;
+
+		bool _not_in_aoi;
 
 		std::vector<PhotoPOS> _photos;
 	};
