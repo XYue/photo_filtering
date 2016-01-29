@@ -464,9 +464,6 @@ error0:
 				break;
 			}
 
-			Point contour_min, contour_max;
-			get_bounding_rect(contour, contour_min, contour_max);
-
 			if (_photos.empty() && load_pos())
 			{
 				std::cout<<"load_pos failed."<<std::endl;
@@ -483,8 +480,8 @@ error0:
 				if (!boost::filesystem::exists(image_fullname)) continue;
 
 				Point pt = {photo.longitude, photo.latitude, photo.altitude};	
-				if ( (!_not_in_aoi && point_in_polygon(pt, contour, &contour_min, &contour_max)) || 
-					(_not_in_aoi && !point_in_polygon(pt, contour, &contour_min, &contour_max)))
+				if ( (!_not_in_aoi && point_in_polygon(pt, contour)) || 
+					(_not_in_aoi && !point_in_polygon(pt, contour)))
 				{
 					std::string dst_image_fullname = img_dir + "\\" + photo.filename;
 					boost::filesystem::copy_file(image_fullname,

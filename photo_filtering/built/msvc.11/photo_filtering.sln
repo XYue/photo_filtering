@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fly_pos_to_kml", "fly_pos_t
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "photo_exif_toolkit", "photo_exif_toolkit\photo_exif_toolkit.vcxproj", "{2B7CDE7F-38F0-487C-AC7D-32DFD3945867}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "point_filtering", "point_filtering\point_filtering.vcxproj", "{8C39841B-2DB5-4264-856B-069633E2F9DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -25,6 +27,10 @@ Global
 		{2B7CDE7F-38F0-487C-AC7D-32DFD3945867}.Debug|x64.Build.0 = Debug|x64
 		{2B7CDE7F-38F0-487C-AC7D-32DFD3945867}.Release|x64.ActiveCfg = Release|x64
 		{2B7CDE7F-38F0-487C-AC7D-32DFD3945867}.Release|x64.Build.0 = Release|x64
+		{8C39841B-2DB5-4264-856B-069633E2F9DE}.Debug|x64.ActiveCfg = Debug|x64
+		{8C39841B-2DB5-4264-856B-069633E2F9DE}.Debug|x64.Build.0 = Debug|x64
+		{8C39841B-2DB5-4264-856B-069633E2F9DE}.Release|x64.ActiveCfg = Release|x64
+		{8C39841B-2DB5-4264-856B-069633E2F9DE}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

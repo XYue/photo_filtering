@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+            
+    <PropertyGroup>
+        <PROJ_CONFIG_LINK>static</PROJ_CONFIG_LINK>
+        <GOOGLE_GFLAGS_CONFIG_LINK>static</GOOGLE_GFLAGS_CONFIG_LINK>
+    </PropertyGroup>
+    
+    <ImportGroup Label="PropertySheets">
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\eigen\kit\eigen_latest.props"
+            Condition="'$(EIGEN_IMPORT)'!='true'" />
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\proj\kit\proj_latest.props"
+            Condition="'$(PROJ_IMPORT)'!='true'" />
+        <Import
+            Project="$(MSBuildThisFileDirectory)..\..\..\..\..\..\Shared\google\gflags\kit\google_gflags_latest.props"
+            Condition="'$(GOOGLE_GFLAGS_IMPORT)'!='true'" />
+    </ImportGroup>
+    
+</Project>
